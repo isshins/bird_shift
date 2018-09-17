@@ -119,7 +119,7 @@ function getAnswer(){
   var max = 0;//鳩世話できる度合いの最高値
   var l = 0;
   var count_c = 0;//確定者の数
-  var count_c_past;
+  var count_c_past=0;
   var answer=String(ss.getSheetByName('概要').getRange(2,2).getValue())+"月の鳥シフト\n\n";
   var candidate = [];//各日の候補者の配列
   var cd=[];//候補者の二次配列
@@ -127,6 +127,7 @@ function getAnswer(){
   var confirm = [];//各日の確定案
   var count_w = 0;//何週目かどうか
   var roop= 0;// ループ変数
+  var divide=0;//候補が二人の時に片方をきるときの関数
   var week_divide = 7;
   var sheet = ss.getSheets()[0];//最新の回答結果
   var lastrow = sheet.getLastRow();//行の数
@@ -178,15 +179,19 @@ function getAnswer(){
   Logger.log(do_times);
   
    //候補者を絞る作業
-  while(count_c!=cd.length){
+  while(count_c<cd.length){
+    divide=0;
+    count_c_past=0;
     //候補者が一人ならば確定者に選び、他の日からその候補者を削除する
-    while(count_c>=0){
+    while(count_c_past>=0){
       count_c_past=count_c;
       for(var j=0; j<cd.length; j++){     
         if(cd[j].length == 1){
+          Logger.log('一人確定しました');
           count_c+=1;
           roop+=1;
           confirm[j] = cd[j][0];
+          Logger.log(confirm);
           for(k=0; k<cd.length; k++){
             for(l=0; l<cd[k].length; l++){
               if(cd[k][l]==confirm[j]){
@@ -196,32 +201,46 @@ function getAnswer(){
           }
         }
       }
-      Logger.log(confirm);
       if(count_c-count_c_past==0){
-        count_c=-1;
+        count_c_past=-1;
       }
     }
-    for(j=0; j<cd.length; j++){
-      if(cd[j].length == 2){
-        if(do_times[cd[j][0]-1].length > do_times[cd[j][1]-1].length){
-          cd[j].splice(cd[j][1]);
-        }else if(do_times[cd[j][1]-1].length > do_times[cd[j][0]-1].length){
-          cd[j].splice(cd[j][0]);
-        }else{
-          cd[j].splice(cd[j][Math.floor(Math.random())]);
+    
+    while(divide<cd.length){
+      if(cd[divide].length == 2){
+        if(do_times[cd[divide][0]-1].length > do_times[cd[divide][1]-1].length){
+          cd[divide].splice(1,1);
+          Logger.log(1111111111111111);
+          Logger.log(cd);
+          divide=cd.length;
+        }else if(do_times[cd[divide][1]-1].length > do_times[cd[divide][0]-1].length){
+          cd[divide].splice(0,1);
+          Logger.log(222222222222222);
+          Logger.log(cd);
+          divide=cd.length;
+        }else if(do_times[cd[divide][1]-1].length == do_times[cd[divide][0]-1].length){
+          cd[divide].splice([Math.floor(Math.random()*2)],1);
+          divide=cd.length;
         }
       }
+      divide+=1;
     }
+    Logger.log(confirm);
+    Logger.log(count_c);
     roop+=1;
+    
     if(roop>confirm.length){
       for(j=0; j<cd.length; j++){  
         if(confirm[j]==0){
-          confirm[j] = past_cd[j][Math.floor(Math.random*(past_cd[j].length-1))]
+          Logger.log('到達した');
+          Logger.log(Math.floor(Math.random()*(past_cd[j].length-1)));
+          confirm[j] = past_cd[j][Math.floor(Math.random()*(past_cd[j].length-1))];
+          count_c+=1;
         }
       }
     }
-    Logger.log(confirm);
-    }
+    
+  }
   
       
 //それぞれの数字に対応する人の名前と日付と曜日を加えて
