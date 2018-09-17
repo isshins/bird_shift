@@ -137,6 +137,8 @@ function getAnswer(){
   var do_times = [];//鳩世話できる日の数
   var times=[];
   var count_n = 0;
+  var data_length=[];
+  var max_l=0;
   Logger.log(response);
   sheet.setName(sheetName);// シート名を日付に変更
   for (var j=2; j<lastcolumn; j++){　
@@ -205,21 +207,20 @@ function getAnswer(){
         count_c_past=-1;
       }
     }
-    
+    //候補者が一人に絞れず、候補者が二人のときにより多くの日数入れる人を確定におくことでナンプレのように他の日の確定者を絞る
     while(divide<cd.length){
       if(cd[divide].length == 2){
         if(do_times[cd[divide][0]-1].length > do_times[cd[divide][1]-1].length){
           cd[divide].splice(1,1);
-          Logger.log(1111111111111111);
           Logger.log(cd);
           divide=cd.length;
         }else if(do_times[cd[divide][1]-1].length > do_times[cd[divide][0]-1].length){
           cd[divide].splice(0,1);
-          Logger.log(222222222222222);
-          Logger.log(cd);
+　　         Logger.log(cd);
           divide=cd.length;
         }else if(do_times[cd[divide][1]-1].length == do_times[cd[divide][0]-1].length){
           cd[divide].splice([Math.floor(Math.random()*2)],1);
+          Logger.log(cd);
           divide=cd.length;
         }
       }
@@ -228,20 +229,36 @@ function getAnswer(){
     Logger.log(confirm);
     Logger.log(count_c);
     roop+=1;
-    
+    //分配二周目
+    //被らないように分配したときに人数が足りない場合、同じ人が連日にならないように一番遠くなるように再び分配
     if(roop>confirm.length){
-      for(j=0; j<cd.length; j++){  
+      for(j=0; j<cd.length; j++){
+        data_length=[];
         if(confirm[j]==0){
-          Logger.log('到達した');
-          Logger.log(Math.floor(Math.random()*(past_cd[j].length-1)));
-          confirm[j] = past_cd[j][Math.floor(Math.random()*(past_cd[j].length-1))];
-          count_c+=1;
+          for(k=0; k<past_cd[j].length; k++){
+            for(l=0; l<confirm.length; l++){ 
+              if(past_cd[j][k]==confirm[l]){
+                data_length.push(Math.pow((l-j), 2));
+              }
+            }
+          }
+          for(k=0; k<past_cd[j].length; k++){
+            if(data_length[k]==Math.max.apply(null, data_length)){
+              confirm[j]=past_cd[j][k];
+            }
+          }
+          for(k=0; k<past_cd.length; k++){
+            for(l=0; l<past_cd[k].length; l++){
+              if(past_cd[k][l]==confirm[j]){
+                past_cd[k].splice(l,1);
+              }
+            }
+          }
         }
       }
+      count_c+=1;
     }
-    
   }
-  
       
 //それぞれの数字に対応する人の名前と日付と曜日を加えて
  for (var i=2; i<confirm.length+2; i++){
