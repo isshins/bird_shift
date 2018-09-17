@@ -118,14 +118,15 @@ function getAnswer(){
   var sheetName = date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();//
   var max = 0;//鳩世話できる度合いの最高値
   var l = 0;
-  var plus_count = 0;
+  var count_c = 0;//確定者の数
+  var count_c_past;
   var answer=String(ss.getSheetByName('概要').getRange(2,2).getValue())+"月の鳥シフト\n\n";
   var candidate = [];//各日の候補者の配列
   var cd=[];//候補者の二次配列
   var row_resp=[];//各日の行ける度合いの配列
   var confirm = [];//各日の確定案
   var count_w = 0;//何週目かどうか
-  var stop_roop= 0;// ループ変数
+  var roop= 0;// ループ変数
   var week_divide = 7;
   var sheet = ss.getSheets()[0];//最新の回答結果
   var lastrow = sheet.getLastRow();//行の数
@@ -163,8 +164,8 @@ function getAnswer(){
     confirm.push(0);
   }
   
-  
-  for(i=1; i<lastrow-1; i++){
+ //一人一人の鳩世話できる日の数を配列化
+  for(i=1; i<lastrow; i++){
     times=[];
     for(j=0; j<cd.length; j++){
       count_n = cd[j].indexOf(i);
@@ -177,51 +178,49 @@ function getAnswer(){
   Logger.log(do_times);
   
    //候補者を絞る作業
-  while(num_w>=count_w){
-    stop_roop = 0;//ループ変数の初期化
-    
-    while(plus_count != week_divide-count_w*7){
-      plus_count = 0;
-      if (num_w==count_w){
-        if(week_divide%7==0){
-          week_divide-=7-cd.length%7;
-        }
-      }
-      Logger.log("始点"+count_w*7+'~');
-      Logger.log("終点"+week_divide);
-      for (var j=count_w*7; j<week_divide; j++){     
-        if (cd[j].length == 1){
+  while(count_c!=cd.length){
+    //候補者が一人ならば確定者に選び、他の日からその候補者を削除する
+    while(count_c>=0){
+      count_c_past=count_c;
+      for(var j=0; j<cd.length; j++){     
+        if(cd[j].length == 1){
+          count_c+=1;
+          roop+=1;
           confirm[j] = cd[j][0];
-        }
-      }
-      for(j=count_w*7; j<week_divide; j++){
-        if(confirm[j]!=0){
-          plus_count+=1;
-          Logger.log('正数の数'+plus_count);
-          Logger.log('行列の要素の数'+(week_divide-count_w*7));
-          for(k=count_w*7; k<week_divide; k++){
+          for(k=0; k<cd.length; k++){
             for(l=0; l<cd[k].length; l++){
               if(cd[k][l]==confirm[j]){
                 cd[k].splice(l,1);
               }
             }
           }
-        }  
-        else{
-          Logger.log('0原因'+past_cd[j]);
-          if (stop_roop>7){
-            confirm[j]=past_cd[j][Math.floor(Math.random()*(past_cd[j].length-1))];
-          }
         }
       }
-      stop_roop+=1;
       Logger.log(confirm);
+      if(count_c-count_c_past==0){
+        count_c=-1;
+      }
     }
-    plus_count = 0;
-      count_w+=1;
-      Logger.log('count_week'+count_w);
-      week_divide = (count_w+1)*7;
-      Logger.log(confirm);
+    for(j=0; j<cd.length; j++){
+      if(cd[j].length == 2){
+        if(do_times[cd[j][0]-1].length > do_times[cd[j][1]-1].length){
+          cd[j].splice(cd[j][1]);
+        }else if(do_times[cd[j][1]-1].length > do_times[cd[j][0]-1].length){
+          cd[j].splice(cd[j][0]);
+        }else{
+          cd[j].splice(cd[j][Math.floor(Math.random())]);
+        }
+      }
+    }
+    roop+=1;
+    if(roop>confirm.length){
+      for(j=0; j<cd.length; j++){  
+        if(confirm[j]==0){
+          confirm[j] = past_cd[j][Math.floor(Math.random*(past_cd[j].length-1))]
+        }
+      }
+    }
+    Logger.log(confirm);
     }
   
       
