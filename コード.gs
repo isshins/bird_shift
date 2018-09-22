@@ -1,5 +1,5 @@
 var CHANNEL_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty('CHANNEL_ACCESS_TOKEN');
-var USER_ID = PropertiesService.getScriptProperties().getProperty('USER_ID');
+var MY_USER_ID = PropertiesService.getScriptProperties().getProperty('USER_ID');
 var SS_ID = PropertiesService.getScriptProperties().getProperty('SS_ID');
 
 
@@ -54,7 +54,7 @@ function sendForm(){
   var date = new Date();
   if(date.getDate()<14){
     var postData = {
-      'to':USER_ID,
+      'to':MY_USER_ID,
       'messages':[{
         'type': 'text',
         'text':'今月の鳩世話シフトです\n14日の正午までに答えてください\n'
@@ -82,7 +82,7 @@ function sendForm(){
   }
   else{
     var postData = {
-      'to':USER_ID,
+      'to':MY_USER_ID,
       'messages':[{
         'type': 'text',
         'text':'今月の鳩世話シフトです\n３０日の正午までに答えてください\n'
@@ -288,7 +288,7 @@ function sendAnswer(){
   //メールにnoと返信すればもう一度getAnswerしてくれる。
   if (myResponse.indexOf(consentMessage) != -1){
     var postData = {
-      'to':USER_ID,
+      'to':MY_USER_ID,
       'messages':[{
       'type': 'text',
       'text':ss_answer,
